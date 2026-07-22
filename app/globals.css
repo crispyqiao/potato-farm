@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+:root {
+  --cream: #fbf5dd;
+  --cream-deep: #f3ead0;
+  --soil: #5c4530;
+  --soil-deep: #3e2e20;
+  --green-deep: #0d530e;
+  --green-mid: #306d29;
+  --tan: #c9a876;
+  --amber: #d98e3f;
+  --ink: #2c2418;
+}
+
+html,
+body {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 400;
+}
+
+.font-body {
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+.font-hand {
+  font-family: var(--font-hand), cursive;
+}
+
+@keyframes potato-bob {
+  0%, 100% { transform: translateY(0) rotate(var(--rot, 0deg)); }
+  50%       { transform: translateY(-3px) rotate(var(--rot, 0deg)); }
+}
+
+.potato-mound {
+  animation: potato-bob 4s ease-in-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .potato-mound { animation: none; }
+}
