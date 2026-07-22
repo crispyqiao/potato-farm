@@ -15,6 +15,22 @@ export async function GET() {
   return NextResponse.json({ potatoes });
 }
 
+function findOpenSpot(existing: Potato[]): { x: number; y: number } {
+  const MIN_DIST = 0.18;
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const x = 0.08 + Math.random() * 0.84;
+    const y = 0.08 + Math.random() * 0.84;
+    const tooClose = existing.some((p) => {
+      const dx = p.x - x;
+      const dy = p.y - y;
+      return Math.sqrt(dx * dx + dy * dy) < MIN_DIST;
+    });
+    if (!tooClose) return { x, y };
+  }
+  // fallback if field is very crowded
+  return { x: 0.08 + Math.random() * 0.84, y: 0.08 + Math.random() * 0.84 };
+}
+
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";
   if (isRateLimited(ip)) {
@@ -48,14 +64,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: noteCheck.error }, { status: 400 });
   }
 
+  const existing = await getAllPotatoes();
+  const { x, y } = findOpenSpot(existing);
+
   const potato: Potato = {
     id: randomUUID(),
     drawingDataUrl: drawingDataUrl as string,
     skinColor: skinColor as string,
     note: sanitizeNote(note),
     plantedAt: Date.now(),
-    x: 0.05 + Math.random() * 0.9,
-    y: 0.05 + Math.random() * 0.9,
+    x,
+    y,
     rotation: Math.random() * 16 - 8,
     scale: 0.85 + Math.random() * 0.3,
   };
