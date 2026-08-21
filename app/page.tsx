@@ -8,6 +8,7 @@ import { Potato } from "@/lib/types";
 export default function Home() {
   const [potatoes, setPotatoes] = useState<Potato[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [panelVisible, setPanelVisible] = useState(false);
 
   useEffect(() => {
     fetch("/api/potatoes")
@@ -15,6 +16,8 @@ export default function Home() {
       .then((d) => setPotatoes(d.potatoes ?? []))
       .catch(() => setPotatoes([]))
       .finally(() => setIsLoading(false));
+    const t = setTimeout(() => setPanelVisible(true), 400);
+    return () => clearTimeout(t);
   }, []);
 
   function handlePlanted(potato: Potato) {
@@ -27,8 +30,6 @@ export default function Home() {
       style={{ background: "var(--cream)" }}
     >
       <div className="w-full max-w-6xl mx-auto px-6 flex flex-col items-center py-12">
-
-        {/* Header */}
         <header className="pb-8 text-center w-full">
           <h1
             className="font-display text-6xl sm:text-7xl"
@@ -38,10 +39,7 @@ export default function Home() {
           </h1>
         </header>
 
-        {/* Field + panel side by side */}
         <div className="w-full flex flex-col lg:flex-row items-center lg:items-start gap-10">
-
-          {/* Field */}
           <div className="w-full lg:flex-1">
             {isLoading ? (
               <div style={{ aspectRatio: "1264 / 848" }} />
@@ -56,14 +54,24 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Plant panel */}
-          <div className="w-full lg:w-64 shrink-0 lg:pt-6">
+          <div
+            className="w-full lg:w-64 shrink-0 lg:pt-6 transition-all duration-700"
+            style={{
+              opacity: panelVisible ? 1 : 0,
+              transform: panelVisible ? "translateY(0)" : "translateY(16px)",
+            }}
+          >
             <PlantPanel onPlanted={handlePlanted} />
           </div>
-
         </div>
       </div>
-      <p className="fixed bottom-4 left-4 text-xs font-hand" style={{ color: "var(--soil)", opacity: 0.6 }}>vibe coded by Christy Qiao with ChatGPT &amp; Claude Code</p>
+
+      <p
+        className="fixed bottom-4 left-4 text-xs font-hand"
+        style={{ color: "var(--soil)", opacity: 0.5 }}
+      >
+        vibe coded by Christy Qiao with ChatGPT &amp; Claude
+      </p>
     </main>
   );
 }

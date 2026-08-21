@@ -40,16 +40,6 @@ export default function DrawCanvas({
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 6]);
     ctx.beginPath();
-    ctx.ellipse(
-      CANVAS_SIZE / 2,
-      CANVAS_SIZE / 2,
-      CANVAS_SIZE * 0.32,
-      CANVAS_SIZE * 0.24,
-      0,
-      0,
-      Math.PI * 2
-    );
-    ctx.stroke();
     ctx.restore();
 
     registerHandle({
@@ -65,16 +55,6 @@ export default function DrawCanvas({
         ctx.lineWidth = 2;
         ctx.setLineDash([6, 6]);
         ctx.beginPath();
-        ctx.ellipse(
-          CANVAS_SIZE / 2,
-          CANVAS_SIZE / 2,
-          CANVAS_SIZE * 0.32,
-          CANVAS_SIZE * 0.24,
-          0,
-          0,
-          Math.PI * 2
-        );
-        ctx.stroke();
         ctx.restore();
         hasDrawnRef.current = false;
         onChangeHasDrawing(false);
