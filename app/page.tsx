@@ -63,6 +63,7 @@ export default function Home() {
 
         </div>
       </div>
+      <p className="fixed bottom-4 left-4 text-xs font-hand" style={{ color: "var(--soil)", opacity: 0.6 }}>vibe coded by Christy Qiao with ChatGPT &amp; Claude Code</p>
     </main>
   );
 }
