@@ -63,7 +63,7 @@ export default function PlantPanel({ onPlanted }: PlantPanelProps) {
   return (
     <div className="w-full">
       <p className="font-hand text-2xl mb-3" style={{ color: "var(--soil-deep)" }}>
-        Add a potato to my garden?
+        Add a potato to my patch?
       </p>
 
       <div className="flex gap-3 mb-4">
