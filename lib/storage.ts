@@ -1,13 +1,12 @@
 import { Potato } from "./types";
 
-export const MAX_POTATOES = 500;
-const KV_KEY = "potatoes";
+export const MAX_IN_PATCH = 12;
+const PATCH_KEY = "potatoes";
+const ARCHIVE_KEY = "potatoes_archive";
 
 function isRedisConfigured(): boolean {
-  return !!(
-    (process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) &&
-    (process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN)
-  );
+  return !!((process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL) &&
+    (process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN));
 }
 
 async function getRedis() {
@@ -20,48 +19,79 @@ async function getRedis() {
 
 async function getAllFromRedis(): Promise<Potato[]> {
   const redis = await getRedis();
-  const data = await redis.get<Potato[]>(KV_KEY);
+  const data = await redis.get<Potato[]>(PATCH_KEY);
+  return Array.isArray(data) ? data : [];
+}
+
+async function getArchivedFromRedis(): Promise<Potato[]> {
+  const redis = await getRedis();
+  const data = await redis.get<Potato[]>(ARCHIVE_KEY);
   return Array.isArray(data) ? data : [];
 }
 
 async function addToRedis(potato: Potato): Promise<Potato[]> {
+  const redis = await getRedis();
   const all = await getAllFromRedis();
   all.push(potato);
-  const trimmed = all.slice(-MAX_POTATOES);
-  const redis = await getRedis();
-  await redis.set(KV_KEY, trimmed);
-  return trimmed;
+  let patch = all;
+  let archive = await getArchivedFromRedis();
+  if (all.length > MAX_IN_PATCH) {
+    const overflow = all.slice(0, all.length - MAX_IN_PATCH);
+    patch = all.slice(-MAX_IN_PATCH);
+    archive = [...archive, ...overflow].slice(-500);
+    await redis.set(ARCHIVE_KEY, archive);
+  }
+  await redis.set(PATCH_KEY, patch);
+  return patch;
 }
 
 async function getAllFromFile(): Promise<Potato[]> {
   const { promises: fs } = await import("fs");
   const path = await import("path");
-  const DATA_FILE = path.join(process.cwd(), "data", "potatoes.json");
   try {
-    const raw = await fs.readFile(DATA_FILE, "utf-8");
+    const raw = await fs.readFile(path.join(process.cwd(), "data", "potatoes.json"), "utf-8");
     const parsed = JSON.parse(raw) as Potato[];
     return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
+  } catch { return []; }
+}
+
+async function getArchivedFromFile(): Promise<Potato[]> {
+  const { promises: fs } = await import("fs");
+  const path = await import("path");
+  try {
+    const raw = await fs.readFile(path.join(process.cwd(), "data", "archive.json"), "utf-8");
+    const parsed = JSON.parse(raw) as Potato[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
 }
 
 async function addToFile(potato: Potato): Promise<Potato[]> {
   const { promises: fs } = await import("fs");
   const path = await import("path");
   const DATA_DIR = path.join(process.cwd(), "data");
-  const DATA_FILE = path.join(DATA_DIR, "potatoes.json");
   await fs.mkdir(DATA_DIR, { recursive: true });
   const all = await getAllFromFile();
   all.push(potato);
-  const trimmed = all.slice(-MAX_POTATOES);
-  await fs.writeFile(DATA_FILE, JSON.stringify(trimmed), "utf-8");
-  return trimmed;
+  let patch = all;
+  let archive = await getArchivedFromFile();
+  if (all.length > MAX_IN_PATCH) {
+    const overflow = all.slice(0, all.length - MAX_IN_PATCH);
+    patch = all.slice(-MAX_IN_PATCH);
+    archive = [...archive, ...overflow].slice(-500);
+    await fs.writeFile(path.join(DATA_DIR, "archive.json"), JSON.stringify(archive), "utf-8");
+  }
+  await fs.writeFile(path.join(DATA_DIR, "potatoes.json"), JSON.stringify(patch), "utf-8");
+  return patch;
 }
 
 export async function getAllPotatoes(): Promise<Potato[]> {
   if (isRedisConfigured()) return getAllFromRedis();
   return getAllFromFile();
+}
+
+export async function getAllArchived(): Promise<Potato[]> {
+  if (isRedisConfigured()) return getArchivedFromRedis();
+  return getArchivedFromFile();
 }
 
 export async function addPotato(potato: Potato): Promise<Potato[]> {

@@ -50,7 +50,7 @@ export default function Home() {
               className="text-center text-sm mt-3 font-body"
               style={{ color: "var(--green-mid)" }}
             >
-              {potatoes.length} potato{potatoes.length === 1 ? "" : "es"} planted so far
+              {potatoes.length} potato{potatoes.length === 1 ? "" : "es"} planted so far · <a href="/library" style={{ color: "var(--green-mid)" }}>potato library →</a>
             </p>
           </div>
 
