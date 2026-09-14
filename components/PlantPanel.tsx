@@ -136,6 +136,15 @@ export default function PlantPanel({ onPlanted }: PlantPanelProps) {
       >
         {isSubmitting ? "Planting..." : "Plant"}
       </button>
+
+      
+      <a
+        href="/library"
+        className="w-full py-3 rounded-full font-display text-lg transition-opacity mt-3 flex items-center justify-center"
+        style={{ background: "var(--green-deep)", color: "var(--cream)" }}
+      >
+        🥔 Potato library
+      </a>
     </div>
   );
 }
