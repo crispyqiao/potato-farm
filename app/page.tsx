@@ -50,7 +50,7 @@ export default function Home() {
               className="text-center text-sm mt-3 font-body"
               style={{ color: "var(--green-mid)" }}
             >
-              {potatoes.length} potato{potatoes.length === 1 ? "" : "es"} planted so far · <a href="/library" style={{ color: "var(--green-mid)" }}>potato library →</a>
+              {potatoes.length} potato{potatoes.length === 1 ? "" : "es"} planted so far
             </p>
           </div>
 
@@ -64,6 +64,14 @@ export default function Home() {
             <PlantPanel onPlanted={handlePlanted} />
           </div>
         </div>
+
+        
+          href="/library"
+          className="font-hand text-lg mt-10 px-6 py-3 rounded-full border-2 flex items-center gap-2 transition-transform hover:scale-105"
+          style={{ borderColor: "var(--green-mid)", color: "var(--green-mid)" }}
+        >
+          🥔 See potato library
+        </a>
       </div>
 
       <p
