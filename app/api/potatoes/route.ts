@@ -10,15 +10,43 @@ export async function GET() {
   return NextResponse.json({ potatoes });
 }
 
+// Mirrors the soil trapezoid projection in components/Field.tsx so spacing
+// is checked in the same visually-projected space (the back of the box is
+// narrower than the front, so raw x/y distance alone is not enough).
+const SOIL = {
+  back:  { x: 52.215, y: 14.151 },
+  left:  { x:  9.098, y: 37.146 },
+  right: { x: 90.190, y: 25.943 },
+  front: { x: 48.259, y: 52.476 },
+};
+
+function projectToSoil(u: number, v: number) {
+  const lx = SOIL.back.x + (SOIL.left.x - SOIL.back.x) * v;
+  const ly = SOIL.back.y + (SOIL.left.y - SOIL.back.y) * v;
+  const rx = SOIL.back.x + (SOIL.right.x - SOIL.back.x) * v;
+  const ry = SOIL.back.y + (SOIL.right.y - SOIL.back.y) * v;
+  const x = lx + (rx - lx) * u;
+  const y = ly + (ry - ly) * u;
+  return { x, y };
+}
+
+function projectedPosition(px: number, py: number) {
+  const u = 0.08 + px * 0.84;
+  const v = 0.08 + py * 0.84;
+  return projectToSoil(u, v);
+}
+
 function findOpenSpot(existing: Potato[]): { x: number; y: number } {
-  const MIN_DIST = 0.16;
+  const MIN_DIST_PCT = 14;
   for (let attempt = 0; attempt < 120; attempt++) {
     const x = 0.12 + Math.random() * 0.76;
     const y = 0.12 + Math.random() * 0.76;
+    const candidate = projectedPosition(x, y);
     const tooClose = existing.some((p) => {
-      const dx = p.x - x;
-      const dy = p.y - y;
-      return Math.sqrt(dx * dx + dy * dy) < MIN_DIST;
+      const placed = projectedPosition(p.x, p.y);
+      const dx = placed.x - candidate.x;
+      const dy = placed.y - candidate.y;
+      return Math.sqrt(dx * dx + dy * dy) < MIN_DIST_PCT;
     });
     if (!tooClose) return { x, y };
   }
@@ -28,7 +56,7 @@ function findOpenSpot(existing: Potato[]): { x: number; y: number } {
 export async function POST(request: NextRequest) {
   const ip = request.headers.get("x-forwarded-for") ?? "unknown";
   if (isRateLimited(ip)) {
-    return NextResponse.json({ error: "You're planting too fast! Try again in a minute." }, { status: 429 });
+    return NextResponse.json({ error: "You are planting too fast! Try again in a minute." }, { status: 429 });
   }
   let body: unknown;
   try { body = await request.json(); } catch {
