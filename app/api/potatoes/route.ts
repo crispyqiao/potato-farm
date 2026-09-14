@@ -11,7 +11,7 @@ export async function GET() {
 }
 
 function findOpenSpot(existing: Potato[]): { x: number; y: number } {
-  const MIN_DIST = 0.42;
+  const MIN_DIST = 0.16;
   for (let attempt = 0; attempt < 120; attempt++) {
     const x = 0.12 + Math.random() * 0.76;
     const y = 0.12 + Math.random() * 0.76;
